@@ -18,7 +18,7 @@ def cutting_segmentation_image(image):
     gray_image = cv2.cvtColor(open_operation_image, cv2.COLOR_BGR2GRAY)
     gaussian_blur_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
     median_blur_image = cv2.medianBlur(gaussian_blur_image, 3)
-    binary_image = cv2.adaptiveThreshold(median_blur_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 6)
+    binary_image = cv2.adaptiveThreshold(median_blur_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 4)
     result_binary_image = cv2.adaptiveThreshold(gaussian_blur_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 6)
     results = cv2.connectedComponentsWithStats(binary_image, connectivity=8)
     status = results[2]
@@ -45,6 +45,7 @@ def get_max_segmentation_image(image):
     gray_image = cv2.cvtColor(erosion_image, cv2.COLOR_BGR2GRAY)
     blur_gray = cv2.GaussianBlur(gray_image, (5, 5), 0)
     low_h, high_h, min_x, max_x = get_interest_image(blur_gray)
+    cv2.rectangle(image, (min_x, low_h), (max_x, high_h-5), (0, 0, 255), 1)
     return image[low_h:high_h, min_x:max_x]
 
 def get_interest_image(image):
@@ -85,13 +86,11 @@ def get_interest_image(image):
     for i in range(1, len(results[2])):
         x, y, w, h, s = status[i]
         if w <= 28 and w >= 5 and h <= 25 and h >= 10 and s >= 40:
-            cv2.rectangle(temp_image, (x, y), (x + w, y + h), (0, 0, 255), 1)
+            # cv2.rectangle(temp_image, (x, y), (x + w, y + h), (0, 0, 255), 1)
             index_x_count.append(x)
             index_x_count.append(x+w)
     min_x = min(index_x_count)
     max_x = max(index_x_count)
-    # cv2.imshow('binary', binary_image)
-    # cv2.imshow('temp', temp_image)
     return low_h, high_h, min_x, max_x
 
 def get_low_boundary(binary_image):
@@ -121,7 +120,6 @@ def get_h_line(binary_image):
     for j in range(h):
         for i in range(h_h[j]):
             hprojection[j, i] = 0
-    cv2.imshow('hpro', hprojection)
     return h_h
 
 def get_fragment_label(filename) -> list:
@@ -196,7 +194,6 @@ if __name__ == '__main__':
             except:
                 logging.error('No.{:<3} Image Cutting Process have a Error : {},  '.format(i + 1, filename))
                 error_nums += 1
-            # cv2.imshow('a'+str(i), interest_image)
     logging.debug('Cutting Image total : {} ,Among them, the errors nums is : {}'.format(len(list), error_nums))
     logging.debug('All Images have been Cut and the Output Path is : {}'.format(output_dir))
 

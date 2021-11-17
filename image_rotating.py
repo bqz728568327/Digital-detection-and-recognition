@@ -20,10 +20,10 @@ def rotate(image, threshold, minLineLength, maxLineGap, flag=False):
     target_x1, target_y1, target_x2, target_y2 = 0,0,0,0
     for line in lines:
         x1, y1, x2, y2 = line[0]
-        if abs(y1 - y2) < abs(x1 - x2) and y2 < height // 3 and y1 < height // 3 and abs(x2 - x1) >= width // 3:
+        # cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 1)
+        if abs(y1 - y2) < abs(x1 - x2) and y2 < height // 3 and y1 < height // 3 and abs(x2 - x1) >= width // 3 and abs(y1-y2)<20:
             if y1 > target_y1:
                 target_x1, target_y1, target_x2, target_y2 = x1, y1, x2, y2
-    # cv2.line(image, (target_x1, target_y1), (target_x2, target_y2), (0, 255, 0), 2)
     #       获取旋转角度
     angle = cv2.fastAtan2(float((target_y2 - target_y1)), float((target_x2 - target_x1)))
     angle = angle % 90
@@ -32,7 +32,8 @@ def rotate(image, threshold, minLineLength, maxLineGap, flag=False):
     rotate_mat = cv2.getRotationMatrix2D((width/2,height/2), angle, 1.0)  # 获取旋转矩阵
     background_color = abstract_background_color(gray_image)
     rotate_image = cv2.warpAffine(image, rotate_mat, (width, height), borderValue=background_color)
-    # cv2.line(rotate_image, (x1, y1), (x2, y2), (0, 0, 255), 1)
+    # cv2.line(image, (target_x1, target_y1), (target_x2, target_y2), (0, 0, 255), 2)
+    # cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
     return rotate_image
 
 def abstract_background_color(image, thresh=0):
@@ -78,9 +79,9 @@ if __name__ == '__main__':
             image = cv2.imread(image_path)
             image = cv2.resize(image, (512, 256))
             rotated_image = rotate(image, 50, 50, 80)
-            # cv2.imshow("a"+str(i), rotated_image)
             output = os.path.join(output_root, filename)
             cv2.imwrite(output, rotated_image)
             logging.info('No.{:<3} Image Rotated Success : {}'.format(i+1, filename))
     logging.debug('All Images have been Rotated and the Output Path is : {}'.format(output_root))
+    cv2.waitKey()
 
